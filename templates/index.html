@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PromptForge AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+    <div class="max-w-4xl mx-auto px-4 py-12">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">PromptForge Micro-SaaS</h1>
+            <p class="text-slate-400 mt-2">Apne basic prompt ko enterprise-grade AI-ready prompt mein convert karein aur live test karein.</p>
+        </header>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-slate-400 mb-2">Category Select Karein</label>
+                <select id="category" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-slate-200 focus:outline-none">
+                    <option value="coding">💻 Software Engineering</option>
+                    <option value="marketing">📈 Marketing</option>
+                    <option value="creative">✍️ Creative Writing</option>
+                </select>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-slate-400 mb-2">Apna Simple Prompt Likhein</label>
+                <textarea id="userPrompt" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-slate-200 focus:outline-none placeholder-slate-600" placeholder="e.g., Mujhe ek python script chahiye..."></textarea>
+            </div>
+
+            <button onclick="forgePrompt()" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-3 rounded-lg transition-all">
+                Forge & Generate Response ✨
+            </button>
+        </div>
+
+        <!-- Output Sections -->
+        <div id="outputSection" class="hidden mt-8 space-y-6">
+            <div class="bg-indigo-950/30 border border-indigo-500/20 rounded-xl p-5">
+                <h3 class="text-indigo-400 font-semibold mb-2">🚀 Optimized Prompt:</h3>
+                <p id="resultPrompt" class="text-slate-300 bg-slate-950/60 p-4 rounded-lg border border-slate-800 select-all font-mono text-sm"></p>
+            </div>
+
+            <!-- New Section for Real AI Output -->
+            <div class="bg-violet-950/30 border border-violet-500/20 rounded-xl p-5">
+                <h3 class="text-violet-400 font-semibold mb-2">🤖 AI Live Response:</h3>
+                <div id="aiResponse" class="text-slate-300 bg-slate-950/60 p-4 rounded-lg border border-slate-800 font-sans text-sm whitespace-pre-wrap"></div>
+            </div>
+
+            <div class="bg-emerald-950/30 border border-emerald-500/20 rounded-xl p-5">
+                <h3 class="text-emerald-400 font-semibold mb-2">🔗 Live API Endpoint</h3>
+                <p id="resultApi" class="text-slate-400 bg-slate-950/60 p-3 rounded-lg border border-slate-800 text-xs font-mono"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function forgePrompt() {
+            const prompt = document.getElementById('userPrompt').value;
+            const category = document.getElementById('category').value;
+            const btn = document.getElementById('submitBtn');
+            
+            if(!prompt) return alert('Pehle kuch likhein!');
+
+            btn.innerText = "Generating with AI... ⏳";
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt, category })
+                });
+                const data = await response.json();
+                
+                document.getElementById('resultPrompt').innerText = data.perfect_prompt;
+                document.getElementById('aiResponse').innerText = data.ai_response;
+                document.getElementById('resultApi').innerText = data.api_endpoint;
+                document.getElementById('outputSection').classList.remove('hidden');
+            } catch(e) {
+                alert("Koy error aaya hai backend par!");
+            } finally {
+                btn.innerText = "Forge & Generate Response ✨";
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
+
