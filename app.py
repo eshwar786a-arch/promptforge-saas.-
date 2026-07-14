@@ -1,19 +1,20 @@
 from flask import Flask, render_template, request, jsonify
 import requests
+import os
 
 app = Flask(__name__)
 
-# ⚠️ Apni Groq API Key yahan paste karein
+# Vercel environment variable se key access karne ke liye
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 
 def upgrade_prompt(user_prompt, category):
     frameworks = {
-        "coding": f"Act as an expert Senior Developer. Follow clean code principles, optimize for performance, and handle edge cases. Task: {user_prompt}",
-        "marketing": f"Act as a World-Class Copywriter. Use the AIDA framework, emotional hooks, and clear CTA. Task: {user_prompt}",
-        "creative": f"Act as an Award-Winning Author. Use vivid imagery and show-don't-tell technique. Task: {user_prompt}"
+        "coding": f"Act as an expert Senior Developer. Optimize, refactor, and improve the following prompt to get the best coding results from an AI. Keep it structured and precise:\n\n{user_prompt}",
+        "marketing": f"Act as a World-Class Copywriter and Growth Hacker. Rewrite this prompt to craft a highly persuasive, conversion-focused, and engaging marketing copy prompt:\n\n{user_prompt}",
+        "creative": f"Act as an Award-Winning Author and Creative Director. Transform this prompt into an imaginative, vivid, and deeply detailed storytelling or creative writing prompt:\n\n{user_prompt}"
     }
     enhanced = frameworks.get(category, user_prompt)
-    enhanced += "\n\n[Output Format: Detailed explanation followed by clean implementation.]"
+    enhanced += "\n\n[Output Format: Detailed explanation followed by the optimized prompt and usage tips.]"
     return enhanced
 
 @app.route('/')
@@ -25,18 +26,18 @@ def generate():
     data = request.json
     raw_prompt = data.get('prompt', '')
     category = data.get('category', 'coding')
-    
+
     if not raw_prompt:
-        return jsonify({"error": "Prompt khali hai!"}), 400
-        
+        return jsonify({"error": "Prompt khali hai"}), 400
+
     perfect_prompt = upgrade_prompt(raw_prompt, category)
-    
-    # Direct HTTP Request (No Groq library required)
+
+    # Headers mein API key bilkul sahi format mein set hai
     headers = {
         "Authorization": f"Bearer {GROQ_API_KEY}",
         "Content-Type": "application/json"
     }
-    
+
     payload = {
         "messages": [
             {
@@ -46,7 +47,7 @@ def generate():
         ],
         "model": "llama3-8b-8192"
     }
-    
+
     try:
         response = requests.post(
             "https://api.groq.com/openai/v1/chat/completions",
@@ -60,14 +61,8 @@ def generate():
             ai_response = f"API Error (Status {response.status_code}): {response.text}"
     except Exception as e:
         ai_response = f"Connection error: {str(e)}"
-    
-    api_ready_link = f"https://api.yourdomain.com/v1/execute?prompt={raw_prompt[:10]}..."
-    
+
     return jsonify({
         "perfect_prompt": perfect_prompt,
-        "ai_response": ai_response,
-        "api_endpoint": api_ready_link
+        "ai_response": ai_response
     })
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, debug=True)
