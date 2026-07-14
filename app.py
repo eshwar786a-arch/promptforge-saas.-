@@ -4,7 +4,7 @@ import requests
 app = Flask(__name__)
 
 # ⚠️ Apni Groq API Key yahan paste karein
-GROQ_API_KEY = "YAHAN_APNI_GROQ_API_KEY_PASTE_KAREIN"
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 
 def upgrade_prompt(user_prompt, category):
     frameworks = {
